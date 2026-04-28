@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCurrenciesTable extends Migration
+class AddRoleToUsersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,10 @@ class CreateCurrenciesTable extends Migration
      */
     public function up()
     {
-        Schema::create('currencies', function (Blueprint $table) {
-            $table->id();
-
-            $table->string('code', 10)->unique();
-            $table->string('name');
-            $table->boolean('is_active')->default(true);
-
-            $table->timestamps();
+        Schema::table('users', function (Blueprint $table) {
+             $table->enum('role', ['user', 'admin'])
+                ->default('user')
+                ->after('password');
         });
     }
 
@@ -31,6 +27,8 @@ class CreateCurrenciesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('currencies');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('role');
+        });
     }
 }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCurrenciesTable extends Migration
+class CreateAtmCashBalancesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,18 @@ class CreateCurrenciesTable extends Migration
      */
     public function up()
     {
-        Schema::create('currencies', function (Blueprint $table) {
+        Schema::create('atm_cash_balances', function (Blueprint $table) {
             $table->id();
 
-            $table->string('code', 10)->unique();
-            $table->string('name');
-            $table->boolean('is_active')->default(true);
+            $table->foreignId('denomination_id')
+                ->constrained('denominations')
+                ->cascadeOnDelete();
+
+            $table->unsignedInteger('quantity')->default(0);
 
             $table->timestamps();
+
+            $table->unique('denomination_id');
         });
     }
 
@@ -31,6 +35,6 @@ class CreateCurrenciesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('currencies');
+        Schema::dropIfExists('atm_cash_balances');
     }
 }

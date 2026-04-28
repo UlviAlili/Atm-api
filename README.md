@@ -1,64 +1,383 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# ATM Management API
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Bu layihə Laravel 8 və MySQL istifadə edilərək hazırlanmış ATM idarəetmə API-sidir.
 
-## About Laravel
+Əsas məqsəd istifadəçi bankomatdan pul çıxardıqda minimum sayda əskinaz verilməsini təmin etməkdir.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Texnologiyalar
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP
+- Laravel 8
+- MySQL
+- Laravel Sanctum
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Əsas funksiyalar
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- İkili valyuta dəstəyi: AZN və USD
+- Əskinazların idarə edilməsi
+- ATM-də əskinaz qalığının saxlanılması
+- Hesabların idarə olunması
+- Pul çıxarışı
+- Minimum əskinaz sayı ilə çıxarış
+- Uyğun əskinaz kombinasiyası yoxdursa əməliyyatın dayandırılması
+- Paralel sorğularda balans və ATM qalığının qorunması
+- Əməliyyat tarixçəsi
+- Admin istifadəçinin əməliyyat silməsi
+- Audit trail
+- Performance measurement
+- Rate limiting
+- Retry protection
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+## Quraşdırma
 
-### Premium Partners
+Layihə fayllarını yüklədikdən sonra dependency-ləri quraşdırın:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+```bash
+composer install
+```
 
-## Contributing
+`.env` faylını yaradın:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+cp .env.example .env
+```
 
-## Code of Conduct
+Application key yaradın:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+php artisan key:generate
+```
 
-## Security Vulnerabilities
+`.env` faylında database məlumatlarını yazın:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```env
+DB_DATABASE=atm_api
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-## License
+Migration və seeder-ləri işə salın:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan migrate:fresh --seed
+```
+
+Serveri başladın:
+
+```bash
+php artisan serve
+```
+
+---
+
+## Test istifadəçiləri
+
+Seeder ilə iki istifadəçi yaradılır.
+
+### Adi user
+
+```txt
+email: user@test.com
+password: password
+```
+
+### Admin user
+
+```txt
+email: admin@test.com
+password: password
+```
+
+---
+
+## Authentication
+
+### Login
+
+```http
+POST /api/login
+```
+
+Body:
+
+```json
+{
+  "email": "user@test.com",
+  "password": "password"
+}
+```
+
+Response içində token gəlir.
+
+Sonrakı request-lərdə bu header-lər əlavə edilməlidir:
+
+```txt
+Authorization: Bearer TOKEN
+Accept: application/json
+```
+
+---
+
+## Accounts
+
+### User hesablarını görmək
+
+```http
+GET /api/accounts
+```
+
+### Tək hesabı görmək
+
+```http
+GET /api/accounts/{id}
+```
+
+---
+
+## Withdrawal
+
+### Pul çıxarmaq
+
+```http
+POST /api/withdrawals
+```
+
+Body:
+
+```json
+{
+  "account_id": 1,
+  "amount": 125,
+  "idempotency_key": "withdraw-test-001"
+}
+```
+
+Uğurlu halda sistem minimum sayda əskinaz qaytarır.
+
+Məsələn 125 AZN üçün:
+
+```txt
+100 AZN - 1 ədəd
+20 AZN - 1 ədəd
+5 AZN - 1 ədəd
+```
+
+Hesab balansı da yenilənir.
+
+Əgər hesabda 250 AZN varsa, 125 AZN çıxarıldıqdan sonra balans 125 AZN qalır.
+
+---
+
+## Retry Protection
+
+`idempotency_key` eyni göndərilərsə, əməliyyat ikinci dəfə icra olunmur.
+
+Məsələn eyni request təkrar göndərilsə:
+
+```json
+{
+  "account_id": 1,
+  "amount": 125,
+  "idempotency_key": "withdraw-test-001"
+}
+```
+
+Balans ikinci dəfə azalmır.
+
+---
+
+## ATM Cash Balance
+
+### ATM qalığını görmək
+
+```http
+GET /api/atm-cash-balances
+```
+
+### ATM əskinaz sayını dəyişmək
+
+Sadəcə admin istifadəçi edə bilər.
+
+```http
+PUT /api/atm-cash-balances/{id}
+```
+
+Body:
+
+```json
+{
+  "quantity": 5
+}
+```
+
+---
+
+## Currencies
+
+### Valyutaları görmək
+
+```http
+GET /api/currencies
+```
+
+### Tək valyutanı görmək
+
+```http
+GET /api/currencies/{id}
+```
+
+---
+
+## Denominations
+
+### Əskinazları görmək
+
+```http
+GET /api/denominations
+```
+
+Valyutaya görə filter:
+
+```http
+GET /api/denominations?currency_id=1
+```
+
+### Tək əskinazı görmək
+
+```http
+GET /api/denominations/{id}
+```
+
+---
+
+## Withdrawals History
+
+### Çıxarış tarixçəsi
+
+```http
+GET /api/withdrawals
+```
+
+### Tək çıxarışa baxmaq
+
+```http
+GET /api/withdrawals/{id}
+```
+
+### Çıxarışı silmək
+
+Sadəcə admin istifadəçi edə bilər.
+
+```http
+DELETE /api/withdrawals/{id}
+```
+
+---
+
+## Audit Logs
+
+Audit log-lara sadəcə admin istifadəçi baxa bilər.
+
+### Audit log siyahısı
+
+```http
+GET /api/audit-logs
+```
+
+### Tək audit log
+
+```http
+GET /api/audit-logs/{id}
+```
+
+---
+
+## Rate Limiting
+
+API route-larında rate limiting istifadə olunur.
+
+```php
+throttle:10,1
+```
+
+Bu o deməkdir ki, istifadəçi 1 dəqiqədə maksimum 10 request göndərə bilər.
+
+Login üçün ayrıca limit istifadə olunur:
+
+```php
+throttle:5,1
+```
+
+Bu isə 1 dəqiqədə maksimum 5 login cəhdi deməkdir.
+
+---
+
+## Performance Measurement
+
+API response header-lərində request-in işləmə müddəti göstərilir.
+
+```txt
+X-Response-Time-Ms: 35.24
+```
+
+Əgər request gec işləsə, sistem log-a warning yazır.
+
+---
+
+## Parallel Request Protection
+
+Pul çıxarışı zamanı `DB::transaction()` və `lockForUpdate()` istifadə olunur.
+
+Bu səbəbdən eyni vaxtda gələn paralel sorğularda:
+
+- account balance səhv azalmır
+- ATM cash balance səhv azalmır
+- balans mənfiyə düşmür
+
+---
+
+## Əsas test nümunəsi
+
+Başlanğıc balans:
+
+```txt
+250 AZN
+```
+
+Request:
+
+```json
+{
+  "account_id": 1,
+  "amount": 125,
+  "idempotency_key": "test-125-001"
+}
+```
+
+Nəticə:
+
+```txt
+100 AZN - 1 ədəd
+20 AZN - 1 ədəd
+5 AZN - 1 ədəd
+```
+
+Qalan balans:
+
+```txt
+125 AZN
+```
+
+---
+
+## Qeyd
+
+Bu layihədə əsas məqsəd ATM-dən pul çıxarışı zamanı minimum sayda əskinaz verilməsini təmin etməkdir.
+
+Əgər ATM-də uyğun əskinaz kombinasiyası yoxdursa, əməliyyat icra olunmur və hesab balansı dəyişmir.
